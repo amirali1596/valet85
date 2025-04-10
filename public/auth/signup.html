@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign Up - Valet Waste Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #f4f4f4 0%, #f0f3f5 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .form-container {
+      background: white;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      padding: 2rem 2.5rem;
+      width: 100%;
+      max-width: 500px;
+      position: relative;
+    }
+    .back-link {
+      position: absolute;
+      top: 1rem;
+      left: 1.5rem;
+      font-size: 0.9rem;
+    }
+    .back-link a {
+      text-decoration: none;
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+    .form-container h2 {
+      margin-top: 3rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+    input[type="text"], input[type="email"], input[type="password"], input[type="tel"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    .half-row {
+      display: flex;
+      gap: 1rem;
+    }
+    .half-row .form-group {
+      flex: 1;
+    }
+    .submit-btn {
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: white;
+      padding: 0.85rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 1.5rem;
+      width: 100%;
+      transition: background 0.3s ease;
+    }
+    .submit-btn:hover {
+      background: linear-gradient(to right, #0072ff, #00c6ff);
+    }
+    .terms {
+      font-size: 0.9rem;
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .terms a {
+      color: #1d4ed8;
+      text-decoration: none;
+    }
+    .login-link {
+      text-align: center;
+      margin-top: 1.2rem;
+      font-size: 0.9rem;
+    }
+    .login-link a {
+      color: #1d4ed8;
+      font-weight: 600;
+      text-decoration: none;
+    }
+  
+<style>
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 0.6s linear infinite;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+</style>
+
+</style>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&amp;libraries=places"></script>
+</head>
+<body>
+<div class="form-container">
+<div class="back-link">
+<a href="/">← Back to Home</a>
+</div>
+<h2>Create Your Account</h2>
+
+<form id="signup-form">
+<div class="half-row">
+<div class="form-group">
+<label for="firstName">First Name *</label>
+<input id="firstName" name="firstName" required="required" type="text"/><span id="firstName-error" style="color: red; display: none; font-size: 0.85rem;"></span>
+</div>
+<div class="form-group">
+<label for="lastName">Last Name *</label>
+<input id="lastName" name="lastName" required="required" type="text"/><span id="lastName-error" style="color: red; display: none; font-size: 0.85rem;"></span>
+</div>
+</div>
+<div class="half-row">
+<div class="form-group">
+<label for="email">Email Address *</label>
+<input id="email" name="email" required="required" type="email"/><span id="email-error" style="color: red; display: none; font-size: 0.85rem;"></span>
+</div>
+<div class="form-group">
+<label for="password">Password *</label>
+<input id="password" name="password" required="required" type="password"/><span id="password-error" style="color: red; display: none; font-size: 0.85rem;"></span>
+</div>
+</div>
+<div class="form-group">
+<label for="address">Street Address *</label>
+<input id="address" name="address" placeholder="123 Main St" required="required" type="text"/><span id="address-error" style="color: red; display: none; font-size: 0.85rem;"></span>
+</div>
+<div class="half-row">
+<div class="form-group">
+<label for="apartment">Apt #</label>
+<input id="apartment" name="apartment" placeholder="Apt 4B" type="text"/>
+</div>
+<div class="form-group">
+<label for="city">City *</label>
+<input id="city" name="city" required="required" type="text"/><span id="city-error" style="color: red; display: none; font-size: 0.85rem;"></span>
+</div>
+<div class="form-group">
+<label for="zip">ZIP Code *</label>
+<input id="zip" name="zip" pattern="\d{5}" required="required" title="Please enter a 5-digit ZIP code" type="text"/><span id="zip-error" style="color: red; display: none; font-size: 0.85rem;"></span>
+</div>
+</div>
+<div class="form-group">
+<label for="phone">Phone Number *</label>
+<input id="phone" name="phone" required="required" type="tel"/><span id="phone-error" style="color: red; display: none; font-size: 0.85rem;"></span>
+</div>
+<div class="form-group">
+<label for="plan">Choose a Plan *</label>
+<select id="plan" name="plan" required="" style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 10px; font-size: 1rem;">
+<option value="price_1R9dJC8YVwPgAApl2BNVmawM">Standard - $25/month</option>
+<option value="price_1R9dKc8YVwPgAAplqI4Pla5I">Premium - $40/month (includes bring-back)</option>
+</select>
+</div>
+<button class="submit-btn" id="start-checkout" type="button">
+<div id="signup-error" style="color: red; display: none; text-align: center; margin-bottom: 1rem;"></div>Proceed to Payment</button>
+<p class="terms">
+        By signing up, you agree to our <a href="/auth/terms.html" target="_blank">Terms and Conditions</a> and <a href="/auth/privacy.html" target="_blank">Privacy Policy</a>.
+      </p>
+<p class="login-link">
+        Already have an account? <a href="/auth/login.html">Log in</a>
+</p>
+</form>
+</div>
+<script>
+  if (window.netlifyIdentity) {
+    netlifyIdentity.init();
+  }
+</script>
+<script>
+    function initAutocomplete() {
+      const addressInput = document.getElementById('address');
+      if (addressInput) {
+        const autocomplete = new google.maps.places.Autocomplete(addressInput, {
+          types: ['address'],
+          componentRestrictions: { country: 'us' }
+        });
+
+        autocomplete.setFields(['address_components', 'formatted_address']);
+
+        autocomplete.addListener('place_changed', function () {
+          const place = autocomplete.getPlace();
+
+          let city = '';
+          let zip = '';
+          for (const component of place.address_components) {
+            if (component.types.includes('locality')) {
+              city = component.long_name;
+            }
+            if (component.types.includes('postal_code')) {
+              zip = component.long_name;
+            }
+          }
+
+          if (city) document.getElementById('city').value = city;
+          if (zip) document.getElementById('zip').value = zip;
+        });
+      }
+    }
+
+    window.addEventListener('load', initAutocomplete);
+  </script>
+<script>
+    if (window.netlifyIdentity) {
+      netlifyIdentity.init();
+    }
+  </script>
+<script></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById('signup-form');
+    if (!form) {
+      console.error("Signup form not found.");
+      return;
+    }
+
+    if (typeof netlifyIdentity === "undefined") {
+      console.error("Netlify Identity is not loaded.");
+      return;
+    }
+
+    netlifyIdentity.init();
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const plan = document.getElementById('plan').value;
+      const zip = document.getElementById('zip').value;
+
+      const zipPattern = /^(14601|14623)$/;
+      if (!zipPattern.test(zip)) {
+        alert("ZIP code not supported yet.");
+        console.warn("Blocked ZIP code:", zip);
+        return;
+      }
+
+      console.log("Attempting Netlify signup for", email);
+      netlifyIdentity.signup({ email, password }, true)
+        .then(user => {
+          console.log("User signed up:", user);
+          fetch('/.netlify/functions/create-checkout-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, plan })
+          })
+          .then(res => res.json())
+          .then(data => {
+            const stripe = Stripe('pk_test_51R99DK8YVwPgAAplM3rLEZvQDh0rGpqX8xW4SX0RzFHOi9VqIW1rLFQXMxYPWvrXS6JJlVA6O742JWYfkAmdKVXw00sdtSwDcA');
+            stripe.redirectToCheckout({ sessionId: data.sessionId });
+          });
+        })
+        .catch(err => {
+      const spinner = button.querySelector('.spinner');
+      button.disabled = false;
+      spinner.style.display = 'none';
+          alert("Signup error: " + err.message);
+          console.error("Signup error:", err);
+        });
+    });
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    
+    console.log("✅ JavaScript loaded successfully");
+
+    const form = document.getElementById('signup-form');
+    if (!form) {
+      console.error("Signup form not found.");
+      return;
+    }
+
+    if (typeof netlifyIdentity === "undefined") {
+      console.error("Netlify Identity is not loaded.");
+      return;
+    }
+
+    netlifyIdentity.init();
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const plan = document.getElementById('plan').value;
+      const zip = document.getElementById('zip').value;
+
+      const zipPattern = /^(14601|14623)$/;
+      if (!zipPattern.test(zip)) {
+        alert("ZIP code not supported yet.");
+        console.warn("Blocked ZIP code:", zip);
+        return;
+      }
+
+      netlifyIdentity.signup({ email, password }, true)
+        .then(user => {
+          fetch('/.netlify/functions/create-checkout-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, plan })
+          })
+          .then(res => res.json())
+          .then(data => {
+            const stripe = Stripe('pk_test_51R99DK8YVwPgAAplM3rLEZvQDh0rGpqX8xW4SX0RzFHOi9VqIW1rLFQXMxYPWvrXS6JJlVA6O742JWYfkAmdKVXw00sdtSwDcA');
+            stripe.redirectToCheckout({ sessionId: data.sessionId });
+          });
+        })
+        .catch(err => {
+      const spinner = button.querySelector('.spinner');
+      button.disabled = false;
+      spinner.style.display = 'none';
+          alert("Signup error: " + err.message);
+        });
+    });
+  });
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById('signup-form');
+    const button = document.getElementById('start-checkout');
+
+    if (!form || !button) {
+      console.error("Form or button not found.");
+      return;
+    }
+
+    button.addEventListener('click', function (e) {
+      e.preventDefault();
+      console.log("✅ Signup button clicked");
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const zip = document.getElementById('zip').value;
+      const plan = document.getElementById('plan').value;
+
+      const zipPattern = /^(14601|14623)$/;
+      if (!zipPattern.test(zip)) {
+        document.getElementById("signup-error").innerText = "ZIP code not supported. Only 14601 and 14623 are allowed."; document.getElementById("signup-error").style.display = "block";
+        return;
+      }
+
+      fetch('/.netlify/identity/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error("Signup failed. Try a different email or password.");
+        }
+        return res.json();
+      })
+      .then(user => {
+        console.log("✅ Signed up:", user.email);
+        fetch('/.netlify/functions/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, plan })
+        })
+        .then(res => res.json())
+        .then(data => {
+          const stripe = Stripe('pk_test_51R99DK8YVwPgAAplM3rLEZvQDh0rGpqX8xW4SX0RzFHOi9VqIW1rLFQXMxYPWvrXS6JJlVA6O742JWYfkAmdKVXw00sdtSwDcA');
+          stripe.redirectToCheckout({ sessionId: data.sessionId });
+        });
+      })
+      .catch(err => {
+      const spinner = button.querySelector('.spinner');
+      button.disabled = false;
+      spinner.style.display = 'none';
+        document.getElementById("signup-error").innerText = "Signup failed: " + err.message; document.getElementById("signup-error").style.display = "block";
+        console.error(err);
+      });
+    });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    function showError(inputId, message) {
+      const errorSpan = document.getElementById(inputId + "-error");
+      if (errorSpan) {
+        errorSpan.innerText = message;
+        errorSpan.style.display = message ? "block" : "none";
+      }
+    }
+
+    function validateZip(zip) {
+      return /^(14601|14623)$/.test(zip);
+    }
+
+    function attachFieldValidation() {
+      const requiredFields = [
+        "firstName", "lastName", "email", "password", "address", "city", "zip", "phone"
+      ];
+
+      requiredFields.forEach(id => {
+        const field = document.getElementById(id);
+        field.addEventListener("blur", () => {
+          if (!field.value.trim()) {
+            showError(id, "This field is required.");
+          } else if (id === "zip" && !validateZip(field.value)) {
+            showError(id, "ZIP code must be 14601 or 14623.");
+          } else {
+            showError(id, "");
+          }
+        });
+      });
+    }
+
+    attachFieldValidation();
+  });
+</script>
+
+</body>
+</html>

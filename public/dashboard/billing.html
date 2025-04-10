@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing | Valet Waste</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="/js/dashboard.js" defer></script>
+</head>
+<body>
+  <header class="dashboard-header">
+    <h1>Billing Management</h1>
+    <button id="logout">Log Out</button>
+  </header>
+  
+  <nav class="dashboard-nav">
+    <a href="/dashboard/"><i class="fas fa-home"></i> Overview</a>
+    <a href="/dashboard/billing.html" class="active"><i class="fas fa-credit-card"></i> Billing</a>
+    <a href="/dashboard/profile.html"><i class="fas fa-user"></i> Profile</a>
+  </nav>
+  
+  <main class="dashboard-main">
+    <section class="billing-section">
+      <h2><i class="fas fa-file-invoice-dollar"></i> Billing History</h2>
+      <div id="invoice-list" class="invoice-list">
+        <div class="loading-spinner"></div>
+      </div>
+    </section>
+    
+    <section class="payment-methods">
+      <h2><i class="fas fa-credit-card"></i> Payment Methods</h2>
+      <div id="payment-methods">
+        <div class="loading-spinner"></div>
+      </div>
+      <button id="add-payment-method" class="btn">
+        <i class="fas fa-plus"></i> Add Payment Method
+      </button>
+    </section>
+    
+    <section class="billing-actions">
+      <button id="manage-portal" class="btn btn-primary">
+        <i class="fas fa-external-link-alt"></i> Manage Billing Portal
+      </button>
+    </section>
+  </main>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const user = netlifyIdentity.currentUser();
+    if (!user) window.location.href = '/auth/login.html';
+    
+    // Load billing data
+    await loadBillingData(user);
+    
+    // Set up event listeners
+    document.getElementById('logout').addEventListener('click', () => {
+      netlifyIdentity.logout();
+      window.location.href = '/';
+    });
+    
+    document.getElementById('add-payment-method').addEventListener('click', () => {
+      alert('Payment method addition would be implemented here');
+      // In a real app, you would:
+      // 1. Create Stripe Elements for card collection
+      // 2. Handle the payment method attachment
+    });
+    
+    document.getElementById('manage-portal').addEventListener('click', async () => {
+      const response = await fetch('/.netlify/functions/create-portal-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + user.token.access_token
+        }
+      });
+      
+      const { url } = await response.json();
+      window.location.href = url;
+    });
+  });
+
+  async function loadBillingData(user) {
+    try {
+      // Fetch invoices
+      const invoicesResponse = await fetch('/.netlify/functions/get-invoices', {
+        headers: {
+          'Authorization': 'Bearer ' + user.token.access_token
+        }
+      });
+      
+      const invoices = await invoicesResponse.json();
+      renderInvoices(invoices);
+      
+      // Fetch payment methods
+      const paymentMethodsResponse = await fetch('/.netlify/functions/get-payment-methods', {
+        headers: {
+          'Authorization': 'Bearer ' + user.token.access_token
+        }
+      });
+      
+      const paymentMethods = await paymentMethodsResponse.json();
+      renderPaymentMethods(paymentMethods);
+    } catch (error) {
+      console.error('Failed to load billing data:', error);
+      document.getElementById('invoice-list').innerHTML = 
+        '<p class="error">Failed to load billing data. Please try again.</p>';
+    }
+  }
+
+  function renderInvoices(invoices) {
+    const container = document.getElementById('invoice-list');
+    
+    if (invoices.length === 0) {
+      container.innerHTML = '<p>No invoices found</p>';
+      return;
+    }
+    
+    container.innerHTML = `
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Download</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${invoices.map(invoice => `
+            <tr>
+              <td>${new Date(invoice.created * 1000).toLocaleDateString()}</td>
+              <td>$${(invoice.amount_paid / 100).toFixed(2)}</td>
+              <td><span class="status ${invoice.status}">${invoice.status}</span></td>
+              <td><a href="${invoice.invoice_pdf}" target="_blank">PDF</a></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function renderPaymentMethods(methods) {
+    const container = document.getElementById('payment-methods');
+    
+    if (methods.length === 0) {
+      container.innerHTML = '<p>No payment methods found</p>';
+      return;
+    }
+    
+    container.innerHTML = `
+      <div class="payment-methods-grid">
+        ${methods.map(method => `
+          <div class="payment-method">
+            <div class="card-brand">
+              <i class="fab fa-${method.card.brand.toLowerCase()}"></i>
+              ${method.card.brand}
+            </div>
+            <div class="card-number">
+              •••• •••• •••• ${method.card.last4}
+            </div>
+            <div class="card-expiry">
+              Exp: ${method.card.exp_month}/${method.card.exp_year}
+            </div>
+            <button class="btn-small remove-method" data-id="${method.id}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+  </script>
+</body>
+</html>

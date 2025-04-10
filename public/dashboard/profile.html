@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | Valet Waste</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script src="/js/dashboard.js" defer></script>
+</head>
+<body>
+  <header class="dashboard-header">
+    <h1>My Profile</h1>
+    <button id="logout">Log Out</button>
+  </header>
+  
+  <nav class="dashboard-nav">
+    <a href="/dashboard/"><i class="fas fa-home"></i> Overview</a>
+    <a href="/dashboard/billing.html"><i class="fas fa-credit-card"></i> Billing</a>
+    <a href="/dashboard/profile.html" class="active"><i class="fas fa-user"></i> Profile</a>
+  </nav>
+  
+  <main class="dashboard-main">
+    <section class="profile-section">
+      <h2><i class="fas fa-user-cog"></i> Account Information</h2>
+      <form id="profile-form">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" disabled>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+        
+        <button type="submit" class="btn">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+      </form>
+    </section>
+    
+    <section class="service-section">
+      <h2><i class="fas fa-trash-alt"></i> Service Details</h2>
+      <div id="service-details">
+        <div class="loading-spinner"></div>
+      </div>
+    </section>
+    
+    <section class="danger-zone">
+      <h2><i class="fas fa-exclamation-triangle"></i> Danger Zone</h2>
+      <button id="cancel-service" class="btn btn-danger">
+        <i class="fas fa-times"></i> Cancel Service
+      </button>
+    </section>
+  </main>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const user = netlifyIdentity.currentUser();
+    if (!user) window.location.href = '/auth/login.html';
+    
+    // Load profile data
+    await loadProfileData(user);
+    
+    // Set up event listeners
+    document.getElementById('logout').addEventListener('click', () => {
+      netlifyIdentity.logout();
+      window.location.href = '/';
+    });
+    
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await saveProfileChanges(user);
+    });
+    
+    document.getElementById('cancel-service').addEventListener('click', () => {
+      if (confirm('Are you sure you want to cancel your service?')) {
+        cancelService(user);
+      }
+    });
+  });
+
+  async function loadProfileData(user) {
+    try {
+      // Load user profile
+      const profileResponse = await fetch('/.netlify/functions/get-profile', {
+        headers: {
+          'Authorization': 'Bearer ' + user.token.access_token
+        }
+      });
+      
+      const profile = await profileResponse.json();
+      renderProfile(profile);
+      
+      // Load service details
+      const serviceResponse = await fetch('/.netlify/functions/get-service-details', {
+        headers: {
+          'Authorization': 'Bearer ' + user.token.access_token
+        }
+      });
+      
+      const serviceDetails = await serviceResponse.json();
+      renderServiceDetails(serviceDetails);
+    } catch (error) {
+      console.error('Failed to load profile data:', error);
+      document.getElementById('service-details').innerHTML = 
+        '<p class="error">Failed to load profile data. Please try again.</p>';
+    }
+  }
+
+  function renderProfile(profile) {
+    document.getElementById('name').value = profile.name || '';
+    document.getElementById('email').value = profile.email;
+    document.getElementById('phone').value = profile.phone || '';
+  }
+
+  function renderServiceDetails(details) {
+    const container = document.getElementById('service-details');
+    container.innerHTML = `
+      <div class="service-card">
+        <h3>${details.plan} Service</h3>
+        <p><strong>Pickup Schedule:</strong> ${details.schedule}</p>
+        <p><strong>Service Address:</strong> ${details.address}</p>
+        <p><strong>Start Date:</strong> ${new Date(details.start_date).toLocaleDateString()}</p>
+      </div>
+    `;
+  }
+
+  async function saveProfileChanges(user) {
+    const formData = {
+      name: document.getElementById('name').value,
+      phone: document.getElementById('phone').value
+    };
+    
+    try {
+      const response = await fetch('/.netlify/functions/update-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + user.token.access_token
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      if (response.ok) {
+        alert('Profile updated successfully!');
+      } else {
+        throw new Error('Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      alert('Failed to update profile. Please try again.');
+    }
+  }
+
+  async function cancelService(user) {
+    try {
+      const response = await fetch('/.netlify/functions/cancel-service', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + user.token.access_token
+        }
+      });
+      
+      if (response.ok) {
+        alert('Service cancelled successfully');
+        window.location.href = '/dashboard/';
+      } else {
+        throw new Error('Failed to cancel service');
+      }
+    } catch (error) {
+      console.error('Service cancellation error:', error);
+      alert('Failed to cancel service. Please contact support.');
+    }
+  }
+  </script>
+</body>
+</html>

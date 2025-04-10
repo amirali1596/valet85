@@ -1,0 +1,33 @@
+{
+  "name": "valet-waste-app",
+  "version": "1.0.0",
+  "description": "Valet Waste Solutions - Premium Trash Pickup Service",
+  "scripts": {
+    "build": "echo 'Static site - no build required'",
+    "dev": "netlify dev",
+    "start": "netlify dev",
+    "test": "echo \"Error: no tests specified\" && exit 1"
+  },
+  "dependencies": {
+    "@netlify/functions": "^1.4.0",
+    "stripe": "^12.12.0",
+    "nodemailer": "^6.9.8",
+    "dotenv": "^16.3.1",
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "netlify-cli": "^16.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "valet",
+    "waste",
+    "trash",
+    "service"
+  ],
+  "author": "Your Name",
+  "license": "ISC"
+}

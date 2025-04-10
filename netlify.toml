@@ -1,0 +1,57 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"  # Key adjustment
+  command = "npm ci || npm install --legacy-peer-deps"
+
+# ===== CRITICAL ASSET REDIRECTS =====
+[[redirects]]
+  from = "/css/*"
+  to = "/css/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/js/*"
+  to = "/js/:splat"
+  status = 200
+  force = true
+
+# ===== FUNCTION PROXY =====
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+  force = true
+
+# ===== APP ROUTES =====
+[[redirects]]
+  from = "/signup"
+  to = "/auth/signup.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/dashboard/index.html"
+  status = 200
+  force = true
+
+# ===== SECURITY =====
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self' https: 'unsafe-inline'"
+
+# ===== FUNCTIONS =====
+[functions]
+  process-payment = { timeout = 10 }
+
+# ===== ENVIRONMENT =====
+[build.environment]
+  NODE_VERSION = "16"
+
+# ===== CATCH-ALL =====
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | Valet Waste</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script defer src="/js/dashboard.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9fafb;
+      color: #1f2937;
+      margin: 0;
+      padding: 0;
+    }
+
+    .dashboard-header {
+      background-color: #2563eb;
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .dashboard-header button {
+      float: right;
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .dashboard-main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+      margin-top: 2rem;
+    }
+
+    .btn-primary {
+      background-color: #3B82F6;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .btn-danger {
+      background-color: #EF4444;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .info-box {
+      margin: 1rem 0;
+      padding: 1rem;
+      background-color: #f3f4f6;
+      border-left: 5px solid #3B82F6;
+    }
+
+    .info-box strong {
+      display: inline-block;
+      width: 150px;
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  const token = localStorage.getItem("access_token");
+  if (!token) {
+    document.body.innerHTML = '<h2 style="text-align:center;color:red;padding-top:2rem;">You are not logged in. <a href="/login">Login here</a>.</h2>';
+  }
+</script>
+
+
+<script>
+  const token = localStorage.getItem("access_token");
+  if (!token) {
+    window.location.href = "/login";
+  }
+</script>
+
+  <header class="dashboard-header">
+    <h1><i class="fas fa-user-circle"></i> Your Dashboard</h1>
+    <button id="logout">Log Out</button>
+  </header>
+
+  <main class="dashboard-main">
+    <section class="user-info">
+      <h2>Your Info</h2>
+      <div class="info-box">
+        <strong>Email:</strong> <span id="user-email">Loading...</span>
+      </div>
+    </section>
+
+    <section class="subscription-info">
+      <h2>Subscription</h2>
+      <div class="info-box">
+        <strong>Plan:</strong> <span id="user-plan">Loading...</span><br>
+        <strong>Status:</strong> <span id="user-status">Loading...</span><br>
+        <strong>Next Billing Date:</strong> <span id="next-bill">Loading...</span>
+      </div>
+
+      <button id="manage-subscription" class="btn-primary">
+        <i class="fas fa-cogs"></i> Manage Subscription
+      </button>
+      <button id="cancel-subscription" class="btn-danger">
+        <i class="fas fa-ban"></i> Cancel Subscription
+      </button>
+    </section>
+
+    
+    <section class="billing-history">
+      <h2>Billing History</h2>
+      <div class="info-box" id="billing-history">
+        <p>Loading your invoices...</p>
+      </div>
+    </section>
+
+    <section class="support-contact">
+      <h2>Need Help?</h2>
+      <div class="info-box">
+        <p>If you have questions or need help with your subscription, feel free to contact us:</p>
+        <p><strong>Email:</strong> <a href="mailto:Amir@Valetwastesolutionsllc.com">Amir@Valetwastesolutionsllc.com</a></p>
+        <p><strong>Phone:</strong> <a href="tel:6319741343">(631) 974-1343</a></p>
+      </div>
+    </section>
+    
+      <h2>Billing History</h2>
+      <div class="info-box">
+        <p>For detailed receipts and invoices, use the "Manage Subscription" button above to access your billing portal.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = netlifyIdentity.currentUser();
+      if (!user) {
+        window.location.href = '/auth/login.html';
+        return;
+      }
+
+      document.getElementById('user-email').textContent = user.email;
+
+      document.getElementById('logout').addEventListener('click', () => {
+        netlifyIdentity.logout();
+        window.location.href = '/';
+      });
+
+      const token = user.token.access_token;
+      const customerId = user.app_metadata?.stripeCustomerId;
+
+      if (!customerId) {
+        document.getElementById('user-status').textContent = 'Not connected to Stripe.';
+        return;
+      }
+
+      // Load subscription info
+      // Load billing history
+      fetch('/.netlify/functions/get-user-subscription', {
+        headers: { Authorization: 'Bearer ' + token }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data.invoices)) {
+          const historyBox = document.getElementById('billing-history');
+          historyBox.innerHTML = '';
+          data.invoices.forEach(invoice => {
+            const div = document.createElement('div');
+            div.innerHTML = `
+              <strong>Date:</strong> ${invoice.date}<br>
+              <strong>Amount:</strong> $${(invoice.amount / 100).toFixed(2)}<br>
+              <strong>Status:</strong> ${invoice.status}<br>
+              <a href="#" target="_blank">Download</a>
+              <hr>
+            `;
+            historyBox.appendChild(div);
+          });
+        }
+        document.getElementById('user-plan').textContent = data.plan || 'N/A';
+        document.getElementById('user-status').textContent = data.status || 'N/A';
+        document.getElementById('next-bill').textContent = data.nextBillingDate || 'N/A';
+      })
+      .catch(err => {
+        console.error('Subscription load failed:', err);
+      });
+    
+      fetch('/.netlify/functions/get-user-subscription', {
+        headers: { Authorization: 'Bearer ' + token }
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('user-plan').textContent = data.plan || 'N/A';
+        document.getElementById('user-status').textContent = data.status || 'N/A';
+        document.getElementById('next-bill').textContent = data.nextBillingDate || 'N/A';
+      })
+      .catch(err => {
+        console.error('Subscription load failed:', err);
+      });
+
+      // Manage subscription
+      document.getElementById('manage-subscription').addEventListener('click', async () => {
+        const res = await fetch('/.netlify/functions/create-portal-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ customerId })
+        });
+
+        const data = await res.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          alert("Failed to open Stripe Portal.");
+        }
+      });
+
+      // Cancel subscription
+      document.getElementById('cancel-subscription').addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to cancel your subscription?')) return;
+
+        const res = await fetch('/.netlify/functions/cancel-subscription', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ customerId })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert("Your subscription has been canceled.");
+          window.location.reload();
+        } else {
+          alert("Failed to cancel. Please contact support.");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

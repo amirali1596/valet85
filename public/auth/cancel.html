@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subscription Canceled - Valet Waste Solutions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #f4f4f4 0%, #f0f3f5 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .form-container {
+      background: white;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      border-radius: 20px;
+      padding: 2rem 2.5rem;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 1.5rem;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    .submit-btn {
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      color: white;
+      padding: 0.85rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s ease;
+    }
+    .submit-btn:hover {
+      background: linear-gradient(to right, #0072ff, #00c6ff);
+    }
+    .message {
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 2rem;
+    }
+    a {
+      color: #1d4ed8;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+
+</head>
+<body>
+  <div class="form-container">
+    <h2>Subscription Canceled</h2>
+    <p class="message">Your subscription has been canceled. If this was a mistake, you can <a href="/auth/signup.html">sign up again</a>.</p>
+  </div>
+</body>
+</html>
